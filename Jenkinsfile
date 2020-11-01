@@ -51,10 +51,18 @@ pipeline {
       }
     }
     
-    stage('Test Run') {
+    stage('Deploy Test Application') {
       steps {
-        sh 'docker run -d $registry:$BUILD_NUMBER'
+        sh 'docker stop flaskr && docker rm flaskr || true'
+        sh 'docker pull thedeepsyadav/devsecops-training:latest'
+        sh 'docker run -p 5000:5000 --name flaskr mrudulasivalanki/devsecopstrainingcyberfrat:latest'
       }
     }
-  } 
+
+    stage('DAST Scan'){
+      steps{
+        sh 'docker run -t owasp/zap2docker-stable zap-baseline.py -t 'http://build.dsy.sh:5000' || true'
+      }
+    }
+  }
 } 
